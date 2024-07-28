@@ -1,0 +1,188 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=GBK"> 
+  <title>Coverage Report > MatchServiceImpl</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">com.example.imeete.service.impl</a>
+</div>
+
+<h1>Coverage Summary for Class: MatchServiceImpl (com.example.imeete.service.impl)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">MatchServiceImpl</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (4/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    87.5%
+  </span>
+  <span class="absValue">
+    (35/40)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">MatchServiceImpl$$SpringCGLIB$$0</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (4/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    87.5%
+  </span>
+  <span class="absValue">
+    (35/40)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package com.example.imeete.service.impl;
+&nbsp;
+&nbsp;import com.example.imeete.dao.UserRepository;
+&nbsp;import com.example.imeete.entity.User;
+&nbsp;import com.example.imeete.service.MatchService;
+&nbsp;import java.util.Objects;
+&nbsp;import java.util.Queue;
+&nbsp;import java.util.concurrent.CompletableFuture;
+&nbsp;import java.util.concurrent.ConcurrentHashMap;
+&nbsp;import java.util.concurrent.ConcurrentLinkedQueue;
+&nbsp;import java.util.concurrent.TimeUnit;
+&nbsp;
+&nbsp;import jakarta.transaction.Transactional;
+&nbsp;import org.hibernate.Hibernate;
+&nbsp;import org.springframework.beans.factory.annotation.Autowired;
+&nbsp;import org.springframework.stereotype.Service;
+&nbsp;
+&nbsp;@Service
+<b class="fc">&nbsp;public class MatchServiceImpl implements MatchService {</b>
+<b class="fc">&nbsp;  private final Queue&lt;User&gt; waitingQueue = new ConcurrentLinkedQueue&lt;&gt;();</b>
+<b class="fc">&nbsp;  private final ConcurrentHashMap&lt;String, CompletableFuture&lt;User&gt;&gt; futureMap =</b>
+&nbsp;      new ConcurrentHashMap&lt;&gt;();
+&nbsp;  @Autowired private UserRepository userRepository;
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void initializeUserCollections(User user) {
+<b class="fc">&nbsp;      Hibernate.initialize(user.getFollowings());</b>
+<b class="fc">&nbsp;      Hibernate.initialize(user.getFollowers());</b>
+<b class="fc">&nbsp;      Hibernate.initialize(user.getPosts());</b>
+<b class="fc">&nbsp;      Hibernate.initialize(user.getLikes());</b>
+<b class="fc">&nbsp;      Hibernate.initialize(user.getCollects());</b>
+<b class="fc">&nbsp;      Hibernate.initialize(user.getLikeComments());</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  @Transactional
+&nbsp;  public CompletableFuture&lt;User&gt; matchUser(String waitingUserId, String mbti, int sex) {
+<b class="fc">&nbsp;    User currentUser = userRepository.findById(waitingUserId).orElse(null);</b>
+<b class="fc">&nbsp;    if (currentUser != null) {</b>
+<b class="fc">&nbsp;        initializeUserCollections(currentUser);</b>
+&nbsp;    }
+<b class="nc">&nbsp;    else</b>
+<b class="nc">&nbsp;    {</b>
+<b class="fc">&nbsp;        CompletableFuture&lt;User&gt; future = new CompletableFuture&lt;&gt;();</b>
+<b class="fc">&nbsp;        future.complete(null);</b>
+<b class="fc">&nbsp;        return future;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="fc">&nbsp;    synchronized (waitingQueue) {</b>
+<b class="fc">&nbsp;        for (User matchedUser : waitingQueue) {</b>
+<b class="fc">&nbsp;            if (!Objects.equals(matchedUser.getUserId(), waitingUserId)</b>
+<b class="fc">&nbsp;                    &amp;&amp; Objects.equals(matchedUser.getMbti(), mbti)</b>
+<b class="fc">&nbsp;                    &amp;&amp; matchedUser.getSex() == sex) {</b>
+<b class="fc">&nbsp;                CompletableFuture&lt;User&gt; future = futureMap.remove(matchedUser.getUserId());</b>
+<b class="fc">&nbsp;                if (future != null) {</b>
+<b class="fc">&nbsp;                    future.complete(currentUser);</b>
+<b class="nc">&nbsp;                }</b>
+<b class="fc">&nbsp;                waitingQueue.remove(matchedUser);</b>
+<b class="fc">&nbsp;                return CompletableFuture.completedFuture(matchedUser);</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;    waitingQueue.add(currentUser);</b>
+<b class="fc">&nbsp;    CompletableFuture&lt;User&gt; future = new CompletableFuture&lt;&gt;();</b>
+<b class="fc">&nbsp;    futureMap.put(currentUser.getUserId(), future);</b>
+<b class="fc">&nbsp;    return future</b>
+<b class="fc">&nbsp;        .orTimeout(3, TimeUnit.SECONDS)</b>
+<b class="fc">&nbsp;        .exceptionally(</b>
+&nbsp;            ex -&gt; {
+<b class="fc">&nbsp;              waitingQueue.remove(currentUser);</b>
+<b class="fc">&nbsp;              futureMap.remove(currentUser.getUserId());</b>
+<b class="fc">&nbsp;              return null; // 返回null表示匹配失败</b>
+&nbsp;            });
+&nbsp;  }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-06-20 09:41</div>
+</div>
+</body>
+</html>

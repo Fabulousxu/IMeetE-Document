@@ -1,0 +1,109 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=GBK"> 
+  <title>Coverage Report > UserService</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">com.example.imeete.service</a>
+</div>
+
+<h1>Coverage Summary for Class: UserService (com.example.imeete.service)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+</tr>
+<tr>
+  <td class="name">UserService</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package com.example.imeete.service;
+&nbsp;
+&nbsp;import com.alibaba.fastjson2.JSONArray;
+&nbsp;import com.alibaba.fastjson2.JSONObject;
+&nbsp;import java.io.IOException;
+&nbsp;import org.springframework.stereotype.Service;
+&nbsp;
+&nbsp;@Service
+&nbsp;public interface UserService {
+&nbsp;  JSONObject login(String userId, String password);
+&nbsp;
+&nbsp;  JSONObject register(String userId, String nickname, String password);
+&nbsp;
+&nbsp;  JSONObject getUserInfo(String userId);
+&nbsp;
+&nbsp;  JSONObject getSelfInfo(String selfId) throws IOException;
+&nbsp;
+&nbsp;  JSONObject getUserPosts(String userId, String selfId);
+&nbsp;
+&nbsp;  JSONArray getSelfPosts(String selfId) throws IOException;
+&nbsp;
+&nbsp;  JSONObject getUserCollects(String userId, String selfId);
+&nbsp;
+&nbsp;  JSONArray getSelfCollects(String selfId) throws IOException;
+&nbsp;
+&nbsp;  JSONArray getFriends(String userId) throws IOException;
+&nbsp;
+&nbsp;  JSONObject follow(String userId, String selfId);
+&nbsp;
+&nbsp;  JSONObject unfollow(String userId, String selfId);
+&nbsp;
+&nbsp;  JSONObject updateUserInfo(
+&nbsp;      String userId,
+&nbsp;      String nickname,
+&nbsp;      String avatar,
+&nbsp;      String mbti,
+&nbsp;      int sex,
+&nbsp;      int age,
+&nbsp;      String area,
+&nbsp;      String intro);
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-06-20 00:53</div>
+</div>
+</body>
+</html>

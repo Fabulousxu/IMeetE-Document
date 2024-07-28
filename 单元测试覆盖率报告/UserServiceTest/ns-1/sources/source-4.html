@@ -1,0 +1,244 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=GBK"> 
+  <title>Coverage Report > UserServiceImpl</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">com.example.imeete.service.impl</a>
+</div>
+
+<h1>Coverage Summary for Class: UserServiceImpl (com.example.imeete.service.impl)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">UserServiceImpl</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (13/13)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (63/63)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package com.example.imeete.service.impl;
+&nbsp;
+&nbsp;import com.alibaba.fastjson2.JSONArray;
+&nbsp;import com.alibaba.fastjson2.JSONObject;
+&nbsp;import com.example.imeete.dao.UserAuthRepository;
+&nbsp;import com.example.imeete.dao.UserRepository;
+&nbsp;import com.example.imeete.entity.User;
+&nbsp;import com.example.imeete.entity.UserAuth;
+&nbsp;import com.example.imeete.service.UserService;
+&nbsp;import com.example.imeete.util.Util;
+&nbsp;import jakarta.servlet.http.Cookie;
+&nbsp;import jakarta.servlet.http.HttpServletResponse;
+&nbsp;import java.io.IOException;
+&nbsp;import org.springframework.beans.factory.annotation.Autowired;
+&nbsp;import org.springframework.stereotype.Service;
+&nbsp;
+&nbsp;@Service
+<b class="fc">&nbsp;public class UserServiceImpl implements UserService {</b>
+&nbsp;  @Autowired private UserRepository userRepository;
+&nbsp;  @Autowired private UserAuthRepository userAuthRepository;
+&nbsp;  @Autowired private HttpServletResponse response;
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public JSONObject login(String userId, String password) {
+<b class="fc">&nbsp;    if (!userAuthRepository.existsById(userId)) return Util.errorResponse(&quot;账号不存在&quot;);</b>
+<b class="fc">&nbsp;    if (!userAuthRepository.existsByUserIdAndPassword(userId, password))</b>
+<b class="fc">&nbsp;      return Util.errorResponse(&quot;密码错误&quot;);</b>
+<b class="fc">&nbsp;    response.addCookie(new Cookie(&quot;userId&quot;, userId));</b>
+<b class="fc">&nbsp;    return Util.successResponse(&quot;登录成功&quot;);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public JSONObject register(String userId, String nickname, String password) {
+<b class="fc">&nbsp;    if (userAuthRepository.existsById(userId)) return Util.errorResponse(&quot;账号已存在&quot;);</b>
+<b class="fc">&nbsp;    User user = new User(userId, nickname);</b>
+<b class="fc">&nbsp;    userRepository.save(user);</b>
+<b class="fc">&nbsp;    userAuthRepository.save(new UserAuth(userId, password));</b>
+<b class="fc">&nbsp;    return Util.successResponse(&quot;注册成功&quot;);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public JSONObject getUserInfo(String selfId) {
+<b class="fc">&nbsp;    User user = userRepository.findById(selfId).orElse(null);</b>
+<b class="fc">&nbsp;    if (user == null) return Util.errorResponse(&quot;用户不存在&quot;);</b>
+<b class="fc">&nbsp;    JSONObject res = Util.successResponse(&quot;获取用户信息成功&quot;);</b>
+<b class="fc">&nbsp;    res.put(&quot;data&quot;, user.toJson(selfId));</b>
+<b class="fc">&nbsp;    return res;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public JSONObject getSelfInfo(String userId) throws IOException {
+<b class="fc">&nbsp;    User user = userRepository.findById(userId).orElse(null);</b>
+<b class="fc">&nbsp;    if (user == null) response.sendError(401);</b>
+<b class="fc">&nbsp;    return user == null ? null : user.toJson(userId);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public JSONObject getUserPosts(String userId, String selfId) {
+<b class="fc">&nbsp;    User user = userRepository.findById(userId).orElse(null);</b>
+<b class="fc">&nbsp;    if (user == null) return Util.errorResponse(&quot;用户不存在&quot;);</b>
+<b class="fc">&nbsp;    JSONObject res = Util.successResponse(&quot;获取用户动态成功&quot;);</b>
+<b class="fc">&nbsp;    res.put(&quot;data&quot;, user.getPostsJson(selfId));</b>
+<b class="fc">&nbsp;    return res;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public JSONArray getSelfPosts(String selfId) throws IOException {
+<b class="fc">&nbsp;    User user = userRepository.findById(selfId).orElse(null);</b>
+<b class="fc">&nbsp;    if (user == null) response.sendError(401);</b>
+<b class="fc">&nbsp;    return user == null ? null : user.getPostsJson(selfId);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public JSONObject getUserCollects(String userId, String selfId) {
+<b class="fc">&nbsp;    User user = userRepository.findById(userId).orElse(null);</b>
+<b class="fc">&nbsp;    if (user == null) return Util.errorResponse(&quot;用户不存在&quot;);</b>
+<b class="fc">&nbsp;    JSONObject res = Util.successResponse(&quot;获取用户收藏成功&quot;);</b>
+<b class="fc">&nbsp;    res.put(&quot;data&quot;, user.getCollectsJson(selfId));</b>
+<b class="fc">&nbsp;    return res;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public JSONArray getSelfCollects(String selfId) throws IOException {
+<b class="fc">&nbsp;    User user = userRepository.findById(selfId).orElse(null);</b>
+<b class="fc">&nbsp;    if (user == null) response.sendError(401);</b>
+<b class="fc">&nbsp;    return user == null ? null : user.getCollectsJson(selfId);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public JSONArray getFriends(String userId) throws IOException {
+<b class="fc">&nbsp;    User user = userRepository.findById(userId).orElse(null);</b>
+<b class="fc">&nbsp;    if (user == null) response.sendError(401);</b>
+<b class="fc">&nbsp;    return user == null ? null : user.getFriendsJson();</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public JSONObject follow(String userId, String selfId) {
+<b class="fc">&nbsp;    User user = userRepository.findById(userId).orElse(null);</b>
+<b class="fc">&nbsp;    User self = userRepository.findById(selfId).orElse(null);</b>
+<b class="fc">&nbsp;    if (user == null || self == null) return Util.errorResponse(&quot;用户不存在&quot;);</b>
+<b class="fc">&nbsp;    if (self.getFollowings().contains(user)) return Util.errorResponse(&quot;已关注该用户&quot;);</b>
+<b class="fc">&nbsp;    self.getFollowings().add(user);</b>
+<b class="fc">&nbsp;    userRepository.save(self);</b>
+<b class="fc">&nbsp;    return Util.successResponse(&quot;关注成功&quot;);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public JSONObject unfollow(String userId, String selfId) {
+<b class="fc">&nbsp;    User user = userRepository.findById(userId).orElse(null);</b>
+<b class="fc">&nbsp;    User self = userRepository.findById(selfId).orElse(null);</b>
+<b class="fc">&nbsp;    if (user == null || self == null) return Util.errorResponse(&quot;用户不存在&quot;);</b>
+<b class="fc">&nbsp;    if (!self.getFollowings().contains(user)) return Util.errorResponse(&quot;未关注该用户&quot;);</b>
+<b class="fc">&nbsp;    self.getFollowings().remove(user);</b>
+<b class="fc">&nbsp;    userRepository.save(self);</b>
+<b class="fc">&nbsp;    return Util.successResponse(&quot;取消关注成功&quot;);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public JSONObject updateUserInfo(
+&nbsp;      String userId,
+&nbsp;      String nickname,
+&nbsp;      String avatar,
+&nbsp;      String mbti,
+&nbsp;      int sex,
+&nbsp;      int age,
+&nbsp;      String area,
+&nbsp;      String intro) {
+<b class="fc">&nbsp;    User user = userRepository.findById(userId).orElse(null);</b>
+<b class="fc">&nbsp;    if (user == null) return Util.errorResponse(&quot;用户不存在&quot;);</b>
+<b class="fc">&nbsp;    user.setNickname(nickname);</b>
+<b class="fc">&nbsp;    user.setAvatar(avatar);</b>
+<b class="fc">&nbsp;    user.setMbti(mbti);</b>
+<b class="fc">&nbsp;    user.setSex(sex);</b>
+<b class="fc">&nbsp;    user.setAge(age);</b>
+<b class="fc">&nbsp;    user.setArea(area);</b>
+<b class="fc">&nbsp;    user.setIntro(intro);</b>
+<b class="fc">&nbsp;    userRepository.save(user);</b>
+<b class="fc">&nbsp;    return Util.successResponse(&quot;更新用户信息成功&quot;);</b>
+&nbsp;  }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-06-20 00:54</div>
+</div>
+</body>
+</html>

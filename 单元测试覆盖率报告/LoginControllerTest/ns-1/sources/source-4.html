@@ -1,0 +1,187 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=GBK"> 
+  <title>Coverage Report > PostController</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">com.example.imeete.controller</a>
+</div>
+
+<h1>Coverage Summary for Class: PostController (com.example.imeete.controller)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">PostController</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/12)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/18)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package com.example.imeete.controller;
+&nbsp;
+&nbsp;import com.alibaba.fastjson2.JSONArray;
+&nbsp;import com.alibaba.fastjson2.JSONObject;
+&nbsp;import com.example.imeete.service.PostService;
+&nbsp;import com.example.imeete.util.Util;
+&nbsp;import java.io.IOException;
+&nbsp;import java.util.Set;
+&nbsp;import org.springframework.beans.factory.annotation.Autowired;
+&nbsp;import org.springframework.web.bind.annotation.*;
+&nbsp;
+&nbsp;@RestController
+&nbsp;@RequestMapping(&quot;/post&quot;)
+&nbsp;@CrossOrigin
+<b class="nc">&nbsp;public class PostController {</b>
+&nbsp;  @Autowired private PostService postService;
+&nbsp;
+&nbsp;  @GetMapping
+&nbsp;  public JSONObject getPostInfo(int id, @CookieValue(&quot;userId&quot;) String userId) throws IOException {
+<b class="nc">&nbsp;    return postService.getPostInfo(id, userId);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @GetMapping(&quot;/comment&quot;)
+&nbsp;  public JSONArray getComments(int postId, long lastCommentId, @CookieValue(&quot;userId&quot;) String userId)
+&nbsp;      throws IOException {
+<b class="nc">&nbsp;    return postService.getComments(postId, lastCommentId, userId);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @PostMapping
+&nbsp;  public JSONObject post(@RequestBody JSONObject body, @CookieValue(&quot;userId&quot;) String userId) {
+<b class="nc">&nbsp;    System.out.println(body);</b>
+<b class="nc">&nbsp;    return postService.post(</b>
+&nbsp;        userId,
+<b class="nc">&nbsp;        body.getString(&quot;title&quot;),</b>
+<b class="nc">&nbsp;        body.getString(&quot;cover&quot;),</b>
+<b class="nc">&nbsp;        body.getString(&quot;content&quot;),</b>
+<b class="nc">&nbsp;        Set.of(body.getString(&quot;category&quot;).split(&quot;\\s+&quot;)),</b>
+<b class="nc">&nbsp;        body.getString(&quot;mbti&quot;));</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @PostMapping(&quot;/comment&quot;)
+&nbsp;  public JSONObject comment(@RequestBody JSONObject body, @CookieValue(&quot;userId&quot;) String userId) {
+<b class="nc">&nbsp;    return postService.comment(body.getIntValue(&quot;id&quot;), userId, body.getString(&quot;content&quot;));</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @PostMapping(&quot;/like&quot;)
+&nbsp;  public JSONObject like(@RequestBody JSONObject body, @CookieValue(&quot;userId&quot;) String userId) {
+<b class="nc">&nbsp;    return postService.like(body.getIntValue(&quot;id&quot;), userId);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @PostMapping(&quot;/dislike&quot;)
+&nbsp;  public JSONObject dislike(@RequestBody JSONObject body, @CookieValue(&quot;userId&quot;) String userId) {
+<b class="nc">&nbsp;    return postService.dislike(body.getIntValue(&quot;id&quot;), userId);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @PostMapping(&quot;/collect&quot;)
+&nbsp;  public JSONObject collect(@RequestBody JSONObject body, @CookieValue(&quot;userId&quot;) String userId) {
+<b class="nc">&nbsp;    return postService.collect(body.getIntValue(&quot;id&quot;), userId);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @PostMapping(&quot;/uncollect&quot;)
+&nbsp;  public JSONObject uncollect(@RequestBody JSONObject body, @CookieValue(&quot;userId&quot;) String userId) {
+<b class="nc">&nbsp;    return postService.uncollect(body.getIntValue(&quot;id&quot;), userId);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @GetMapping(&quot;/mbti&quot;)
+&nbsp;  public JSONArray getPostsByMbti(
+&nbsp;      String mbti, int lastPostId, @CookieValue(&quot;userId&quot;) String userId) {
+<b class="nc">&nbsp;    return postService.getPostsByMbti(Util.getMbtiSet(mbti), lastPostId, userId);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @PostMapping(&quot;/comment/like&quot;)
+&nbsp;  public JSONObject likeComment(
+&nbsp;      @RequestBody JSONObject body, @CookieValue(&quot;userId&quot;) String userId) {
+<b class="nc">&nbsp;    return postService.likeComment(body.getLongValue(&quot;commentId&quot;), userId);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @PostMapping(&quot;/comment/dislike&quot;)
+&nbsp;  public JSONObject dislikeComment(
+&nbsp;      @RequestBody JSONObject body, @CookieValue(&quot;userId&quot;) String userId) {
+<b class="nc">&nbsp;    return postService.dislikeComment(body.getLongValue(&quot;commentId&quot;), userId);</b>
+&nbsp;  }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-06-20 00:50</div>
+</div>
+</body>
+</html>

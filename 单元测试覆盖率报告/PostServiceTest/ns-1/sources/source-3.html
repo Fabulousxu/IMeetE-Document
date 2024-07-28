@@ -1,0 +1,293 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=GBK"> 
+  <title>Coverage Report > PostServiceImpl</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">com.example.imeete.service.impl</a>
+</div>
+
+<h1>Coverage Summary for Class: PostServiceImpl (com.example.imeete.service.impl)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">PostServiceImpl</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (14/14)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (101/101)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package com.example.imeete.service.impl;
+&nbsp;
+&nbsp;import com.alibaba.fastjson2.JSONArray;
+&nbsp;import com.alibaba.fastjson2.JSONObject;
+&nbsp;import com.example.imeete.dao.*;
+&nbsp;import com.example.imeete.entity.Category;
+&nbsp;import com.example.imeete.entity.Comment;
+&nbsp;import com.example.imeete.entity.Post;
+&nbsp;import com.example.imeete.entity.User;
+&nbsp;import com.example.imeete.service.PostService;
+&nbsp;import com.example.imeete.util.Util;
+&nbsp;import jakarta.servlet.http.HttpServletResponse;
+&nbsp;import java.io.IOException;
+&nbsp;import java.util.Set;
+&nbsp;import org.springframework.beans.factory.annotation.Autowired;
+&nbsp;import org.springframework.stereotype.Service;
+&nbsp;
+&nbsp;@Service
+<b class="fc">&nbsp;public class PostServiceImpl implements PostService {</b>
+&nbsp;  @Autowired private PostRepository postRepository;
+&nbsp;  @Autowired private UserRepository userRepository;
+&nbsp;  @Autowired private CategoryRepository categoryRepository;
+&nbsp;  @Autowired private CommentRepository commentRepository;
+&nbsp;  @Autowired private HttpServletResponse response;
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public JSONObject getPostInfo(int postId, String selfId) throws IOException {
+<b class="fc">&nbsp;    Post post = postRepository.findById(postId).orElse(null);</b>
+<b class="fc">&nbsp;    if (post == null) {</b>
+<b class="fc">&nbsp;      response.sendError(404);</b>
+<b class="fc">&nbsp;      return null;</b>
+&nbsp;    }
+<b class="fc">&nbsp;    post.setWatch(post.getWatch() + 1);</b>
+<b class="fc">&nbsp;    postRepository.save(post);</b>
+<b class="fc">&nbsp;    return post.toJson(selfId);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public JSONArray getComments(int postId, long lastCommentId, String selfId) throws IOException {
+<b class="fc">&nbsp;    Post post = postRepository.findById(postId).orElse(null);</b>
+<b class="fc">&nbsp;    if (post == null) response.sendError(404);</b>
+<b class="fc">&nbsp;    return post == null ? null : post.get10CommentsJson(lastCommentId, selfId);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public JSONObject post(
+&nbsp;      String selfId,
+&nbsp;      String title,
+&nbsp;      String cover,
+&nbsp;      String content,
+&nbsp;      Set&lt;String&gt; categories,
+&nbsp;      String mbti) {
+<b class="fc">&nbsp;    User user = userRepository.findById(selfId).orElse(null);</b>
+<b class="fc">&nbsp;    if (user == null) return Util.errorResponse(&quot;用户不存在&quot;);</b>
+<b class="fc">&nbsp;    Post post = new Post();</b>
+<b class="fc">&nbsp;    post.setUser(user);</b>
+<b class="fc">&nbsp;    post.setTitle(title);</b>
+<b class="fc">&nbsp;    post.setCover(cover);</b>
+<b class="fc">&nbsp;    post.setContent(content);</b>
+<b class="fc">&nbsp;    post.setMbti(mbti);</b>
+<b class="fc">&nbsp;    for (String categoryName : categories)</b>
+<b class="fc">&nbsp;      categoryRepository</b>
+<b class="fc">&nbsp;          .findById(categoryName)</b>
+<b class="fc">&nbsp;          .ifPresent(category -&gt; post.getCategories().add(category));</b>
+<b class="fc">&nbsp;    postRepository.save(post);</b>
+<b class="fc">&nbsp;    return Util.successResponse(&quot;发帖成功&quot;);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public JSONObject comment(int postId, String selfId, String content) {
+<b class="fc">&nbsp;    User user = userRepository.findById(selfId).orElse(null);</b>
+<b class="fc">&nbsp;    Post post = postRepository.findById(postId).orElse(null);</b>
+<b class="fc">&nbsp;    if (user == null) return Util.errorResponse(&quot;用户不存在&quot;);</b>
+<b class="fc">&nbsp;    if (post == null) return Util.errorResponse(&quot;帖子不存在&quot;);</b>
+<b class="fc">&nbsp;    Comment comment = new Comment();</b>
+<b class="fc">&nbsp;    comment.setUser(user);</b>
+<b class="fc">&nbsp;    comment.setPost(post);</b>
+<b class="fc">&nbsp;    comment.setContent(content);</b>
+<b class="fc">&nbsp;    post.getComments().add(comment);</b>
+<b class="fc">&nbsp;    postRepository.save(post);</b>
+<b class="fc">&nbsp;    return Util.successResponse(&quot;评论成功&quot;);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public JSONObject like(int postId, String selfId) {
+<b class="fc">&nbsp;    User user = userRepository.findById(selfId).orElse(null);</b>
+<b class="fc">&nbsp;    Post post = postRepository.findById(postId).orElse(null);</b>
+<b class="fc">&nbsp;    if (user == null) return Util.errorResponse(&quot;用户不存在&quot;);</b>
+<b class="fc">&nbsp;    if (post == null) return Util.errorResponse(&quot;帖子不存在&quot;);</b>
+<b class="fc">&nbsp;    if (post.getLikers().contains(user)) return Util.errorResponse(&quot;帖子已点赞&quot;);</b>
+<b class="fc">&nbsp;    post.getLikers().add(user);</b>
+<b class="fc">&nbsp;    postRepository.save(post);</b>
+<b class="fc">&nbsp;    return Util.successResponse(&quot;点赞成功&quot;);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public JSONObject dislike(int postId, String selfId) {
+<b class="fc">&nbsp;    User user = userRepository.findById(selfId).orElse(null);</b>
+<b class="fc">&nbsp;    Post post = postRepository.findById(postId).orElse(null);</b>
+<b class="fc">&nbsp;    if (user == null) return Util.errorResponse(&quot;用户不存在&quot;);</b>
+<b class="fc">&nbsp;    if (post == null) return Util.errorResponse(&quot;帖子不存在&quot;);</b>
+<b class="fc">&nbsp;    if (!post.getLikers().contains(user)) return Util.errorResponse(&quot;帖子未点赞&quot;);</b>
+<b class="fc">&nbsp;    post.getLikers().remove(user);</b>
+<b class="fc">&nbsp;    postRepository.save(post);</b>
+<b class="fc">&nbsp;    return Util.successResponse(&quot;取消点赞&quot;);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public JSONObject collect(int postId, String selfId) {
+<b class="fc">&nbsp;    User user = userRepository.findById(selfId).orElse(null);</b>
+<b class="fc">&nbsp;    Post post = postRepository.findById(postId).orElse(null);</b>
+<b class="fc">&nbsp;    if (user == null) return Util.errorResponse(&quot;用户不存在&quot;);</b>
+<b class="fc">&nbsp;    if (post == null) return Util.errorResponse(&quot;帖子不存在&quot;);</b>
+<b class="fc">&nbsp;    if (post.getCollectors().contains(user)) return Util.errorResponse(&quot;帖子已收藏&quot;);</b>
+<b class="fc">&nbsp;    post.getCollectors().add(user);</b>
+<b class="fc">&nbsp;    postRepository.save(post);</b>
+<b class="fc">&nbsp;    return Util.successResponse(&quot;收藏成功&quot;);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public JSONObject uncollect(int postId, String selfId) {
+<b class="fc">&nbsp;    User user = userRepository.findById(selfId).orElse(null);</b>
+<b class="fc">&nbsp;    Post post = postRepository.findById(postId).orElse(null);</b>
+<b class="fc">&nbsp;    if (user == null) return Util.errorResponse(&quot;用户不存在&quot;);</b>
+<b class="fc">&nbsp;    if (post == null) return Util.errorResponse(&quot;帖子不存在&quot;);</b>
+<b class="fc">&nbsp;    if (!post.getCollectors().contains(user)) return Util.errorResponse(&quot;帖子未收藏&quot;);</b>
+<b class="fc">&nbsp;    post.getCollectors().remove(user);</b>
+<b class="fc">&nbsp;    postRepository.save(post);</b>
+<b class="fc">&nbsp;    return Util.successResponse(&quot;取消收藏&quot;);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public JSONArray getPosts(String type, String categoryName, int lastPostId, String selfId) {
+<b class="fc">&nbsp;    JSONArray res = new JSONArray();</b>
+<b class="fc">&nbsp;    if (type.equals(&quot;发现&quot;) &amp;&amp; !categoryName.equals(&quot;推荐&quot;)) {</b>
+<b class="fc">&nbsp;      Category category = categoryRepository.findById(categoryName).orElse(null);</b>
+<b class="fc">&nbsp;      return category == null ? res : category.get10PostsJson(lastPostId, selfId);</b>
+&nbsp;    }
+&nbsp;    for (Post post :
+<b class="fc">&nbsp;        postRepository.findTop10ByPostIdBeforeOrderByPostIdDesc(</b>
+<b class="fc">&nbsp;            lastPostId == 0 ? Integer.MAX_VALUE : lastPostId)) res.add(post.toJson(selfId));</b>
+<b class="fc">&nbsp;    return res;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public JSONArray getPostsByMbti(Set&lt;String&gt; mbti, int lastPostId, String selfId) {
+<b class="fc">&nbsp;    JSONArray res = new JSONArray();</b>
+&nbsp;    for (Post post :
+<b class="fc">&nbsp;        postRepository.findTop10ByMbtiInAndPostIdBeforeOrderByPostIdDesc(</b>
+<b class="fc">&nbsp;            mbti, lastPostId == 0 ? Integer.MAX_VALUE : lastPostId)) res.add(post.toJson(selfId));</b>
+<b class="fc">&nbsp;    return res;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public JSONArray searchPosts(String keyword, int lastPostId, String selfId) {
+<b class="fc">&nbsp;    JSONArray res = new JSONArray();</b>
+<b class="fc">&nbsp;    if (lastPostId == 0) lastPostId = Integer.MAX_VALUE;</b>
+&nbsp;    for (Post post :
+<b class="fc">&nbsp;        postRepository</b>
+<b class="fc">&nbsp;            .findTop10ByTitleContainsAndPostIdBeforeOrContentContainsAndPostIdBeforeOrUser_NicknameContainsAndPostIdBeforeOrderByPostIdDesc(</b>
+&nbsp;                keyword, lastPostId, keyword, lastPostId, keyword, lastPostId))
+<b class="fc">&nbsp;      res.add(post.toJson(selfId));</b>
+<b class="fc">&nbsp;    return res;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public JSONObject likeComment(long commentId, String selfId) {
+<b class="fc">&nbsp;    User user = userRepository.findById(selfId).orElse(null);</b>
+<b class="fc">&nbsp;    Comment comment = commentRepository.findById(commentId).orElse(null);</b>
+<b class="fc">&nbsp;    if (user == null) return Util.errorResponse(&quot;用户不存在&quot;);</b>
+<b class="fc">&nbsp;    if (comment == null) return Util.errorResponse(&quot;评论不存在&quot;);</b>
+<b class="fc">&nbsp;    if (comment.getLikers().contains(user)) return Util.errorResponse(&quot;评论已点赞&quot;);</b>
+<b class="fc">&nbsp;    comment.getLikers().add(user);</b>
+<b class="fc">&nbsp;    commentRepository.save(comment);</b>
+<b class="fc">&nbsp;    return Util.successResponse(&quot;点赞成功&quot;);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public JSONObject dislikeComment(long commentId, String selfId) {
+<b class="fc">&nbsp;    User user = userRepository.findById(selfId).orElse(null);</b>
+<b class="fc">&nbsp;    Comment comment = commentRepository.findById(commentId).orElse(null);</b>
+<b class="fc">&nbsp;    if (user == null) return Util.errorResponse(&quot;用户不存在&quot;);</b>
+<b class="fc">&nbsp;    if (comment == null) return Util.errorResponse(&quot;评论不存在&quot;);</b>
+<b class="fc">&nbsp;    if (!comment.getLikers().contains(user)) return Util.errorResponse(&quot;评论未点赞&quot;);</b>
+<b class="fc">&nbsp;    comment.getLikers().remove(user);</b>
+<b class="fc">&nbsp;    commentRepository.save(comment);</b>
+<b class="fc">&nbsp;    return Util.successResponse(&quot;取消点赞成功&quot;);</b>
+&nbsp;  }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-06-20 00:53</div>
+</div>
+</body>
+</html>
